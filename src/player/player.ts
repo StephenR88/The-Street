@@ -18,8 +18,14 @@ export class PlayerController {
   }
 
   private onKeyDown = (e: KeyboardEvent): void => {
-    if (e.code === "ArrowLeft" || e.code === "KeyA") this.left = true;
-    if (e.code === "ArrowRight" || e.code === "KeyD") this.right = true;
+    if (e.code === "ArrowLeft" || e.code === "KeyA") {
+      this.left = true;
+      e.preventDefault();
+    }
+    if (e.code === "ArrowRight" || e.code === "KeyD") {
+      this.right = true;
+      e.preventDefault();
+    }
   };
 
   private onKeyUp = (e: KeyboardEvent): void => {
