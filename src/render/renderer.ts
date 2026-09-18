@@ -6,8 +6,8 @@ import { buildingSpriteKey, npcSpriteKey, PROP_SPRITE_KEYS } from "./spriteManif
 
 const GROUND_Y = 260;
 const PROP_SPACING = 320;
-const CHARACTER_TARGET_HEIGHT = 30;
-const PROP_TARGET_HEIGHT = 26;
+const CHARACTER_TARGET_HEIGHT = 52;
+const PROP_TARGET_HEIGHT = 34;
 
 function hashColor(id: string): string {
   let h = 0;
@@ -94,7 +94,10 @@ export class Renderer {
     const ctx = this.ctx;
     const ruinKeys = ["backdrop.ruin0", "backdrop.ruin1", "backdrop.ruin2"];
     const parallax = camera.x * 0.2;
-    const spacing = 220;
+    const targetHeight = 100;
+    const firstSprite = this.assets.get(ruinKeys[0]!);
+    // Tile edge-to-edge at the sprite's own (scaled) width when art is loaded; fall back to a fixed spacing for the procedural placeholder.
+    const spacing = firstSprite ? (firstSprite.frameWidth * targetHeight) / firstSprite.frameHeight : 220;
 
     ctx.save();
     ctx.globalAlpha = 0.85;
@@ -103,7 +106,6 @@ export class Renderer {
       const key = ruinKeys[Math.abs(i) % ruinKeys.length]!;
       const sprite = this.assets.get(key);
       if (sprite) {
-        const targetHeight = 100;
         const scale = targetHeight / sprite.frameHeight;
         const targetWidth = sprite.frameWidth * scale;
         ctx.drawImage(sprite.image, 0, 0, sprite.frameWidth, sprite.frameHeight, bx, GROUND_Y - targetHeight, targetWidth, targetHeight);
@@ -227,16 +229,20 @@ export class Renderer {
     const levelDef = getLevelDef(building.categoryId, building.level);
     const spriteKey = buildingSpriteKey(building.categoryId, building.level);
     const sprite = this.assets.get(spriteKey);
+    const targetWidth = plot.width - 20;
 
+    let renderedHeight: number;
     if (sprite) {
-      this.drawFixedWidth(sprite, centerX, plot.width - 20);
+      this.drawFixedWidth(sprite, centerX, targetWidth);
+      renderedHeight = sprite.frameHeight * (targetWidth / sprite.frameWidth);
     } else {
       this.drawBuildingFallback(building.categoryId, building.level, screenX, plot.width, sim.clock.isNight());
+      renderedHeight = 30 + building.level * 16;
     }
 
     ctx.fillStyle = "#ffffff";
     ctx.font = "9px monospace";
-    ctx.fillText(`${levelDef.name} (L${building.level})`, screenX + 6, GROUND_Y - (30 + building.level * 16) - 6);
+    ctx.fillText(`${levelDef.name} (L${building.level})`, screenX + 6, GROUND_Y - renderedHeight - 6);
   }
 
   private drawBuildingFallback(categoryId: string, level: number, screenX: number, plotWidth: number, isNight: boolean): void {
