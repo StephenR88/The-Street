@@ -3,6 +3,8 @@ import { Simulation } from "./sim/simulation";
 import { generateWorld, PLOT_WIDTH, PROTOTYPE_PLOT_COUNT } from "./world/worldgen";
 import { Camera } from "./render/camera";
 import { Renderer } from "./render/renderer";
+import { AssetLoader } from "./render/assets";
+import { buildManifest } from "./render/spriteManifest";
 import { PlayerController } from "./player/player";
 import { SaveManager } from "./save/save";
 import { renderHud } from "./ui/hud";
@@ -29,7 +31,9 @@ let { sim, playerX: initialPlayerX } = SaveManager.hasSave()
 
 const player = new PlayerController(initialPlayerX);
 const camera = new Camera(canvas.width, worldWidth);
-const renderer = new Renderer(ctx);
+const assets = new AssetLoader();
+assets.beginLoading(buildManifest());
+const renderer = new Renderer(ctx, assets);
 
 window.addEventListener("keydown", (e) => {
   const speedKeys: Record<string, ClockSpeed> = { Digit1: 1, Digit2: 2, Digit3: 4, Digit4: 8 };
@@ -62,7 +66,7 @@ function frame(now: number): void {
   sim.update(deltaMs);
 
   camera.follow(player.x);
-  renderer.render(sim, camera, player.x);
+  renderer.render(sim, camera, player.x, deltaMs);
   renderHud(hudEl, sim, player.x);
 
   requestAnimationFrame(frame);

@@ -50,6 +50,13 @@ whichever NPC is currently nearest the player.
   an attraction score) and a probability-gated immigration stub that spawns
   new residents into vacant housing
 - Versioned JSON save/load (localStorage)
+- A sprite-based rendering pipeline with procedural fallback: the renderer
+  checks for real art assets under `public/sprites/` and draws them when
+  present, falling back to the current placeholder shapes for anything
+  missing — see `public/sprites/README.md` for exactly what files to drop
+  in and where. No code changes are needed to "install" art; the game
+  currently ships with zero sprite files, so it's running entirely on
+  fallback shapes.
 
 Run `npm run dev`, leave it on 8x speed, and watch: NPCs wake, go to work,
 get paid, go shopping, visit each other and build friendship, go home,
@@ -71,7 +78,8 @@ src/
     town/        derived demand/attraction snapshot, immigration roll
     simulation.ts  orchestrator: owns all registries, ticks one sim-minute at a time
   world/     worldgen.ts — builds the starting 15-plot street
-  render/    Camera + Canvas renderer; reads sim state, never mutates it
+  render/    Camera + Canvas renderer + AssetLoader/sprite manifest; reads sim state, never mutates it
+public/sprites/  where real art assets go (see its own README) — empty by default
   player/    input → world position, follows the same rules NPCs do
   save/      versioned JSON save/load
   ui/        HUD
@@ -118,3 +126,6 @@ These have room in the data model already but no logic yet:
 3. Spend down the `spendingBias` trait field and start an NPC's home
    upgrading itself once savings clear a threshold — the first visible
    "the street changed while I wasn't looking" moment.
+4. Drop real art into `public/sprites/` per its README. The renderer is
+   already wired to use it the moment it's present — this is the one item
+   on this list that's pure asset production, no code.
